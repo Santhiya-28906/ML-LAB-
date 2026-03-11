@@ -1,0 +1,69 @@
+#9.1
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Kernel function
+def kernel(point, X, k):
+    m = X.shape[0]
+    weights = np.eye(m)
+
+    for j in range(m):
+        diff = point - X[j]
+        weights[j, j] = np.exp(np.dot(diff, diff) / (-2 * k**2))
+
+    return weights
+
+
+# Local weight calculation
+def localWeight(point, X, y, k):
+    W = kernel(point, X, k)
+    XT_W = X.T @ W
+    theta = np.linalg.inv(XT_W @ X) @ XT_W @ y
+    return theta
+
+
+# LWLR prediction
+def localWeightRegression(X, y, k):
+    m = X.shape[0]
+    ypred = np.zeros(m)
+
+    for i in range(m):
+        theta = localWeight(X[i], X, y, k)
+        ypred[i] = X[i] @ theta
+
+    return ypred
+
+
+# 🔹 Sample dataset
+data = pd.DataFrame({
+    "total_bill":[10,12,13,15,16,18,20,22,24,25],
+    "tip":[1,1.3,1.5,2,2.2,2.4,2.8,3,3.2,3.5]
+})
+
+bill = data["total_bill"].values
+tip = data["tip"].values
+
+# Design matrix
+X = np.column_stack((np.ones(len(bill)), bill))
+y = tip
+
+# Bandwidth
+k = 0.5
+
+# Prediction
+ypred = localWeightRegression(X, y, k)
+
+# Sort for plotting
+sort_idx = np.argsort(bill)
+
+# Plot
+plt.scatter(bill, tip, color="green", label="Actual Data")
+plt.plot(bill[sort_idx], ypred[sort_idx], color="red", linewidth=2, label="LWLR Curve")
+
+plt.xlabel("Total Bill")
+plt.ylabel("Tip")
+plt.title("Locally Weighted Linear Regression")
+plt.legend()
+
+plt.show()
