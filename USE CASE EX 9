@@ -1,0 +1,23 @@
+#9 testcase
+import numpy as np
+
+# Dataset
+X = np.array([800,1000,1200,1500,1800,2000])
+Y = np.array([20,25,30,38,45,50])
+
+# Add bias
+X = np.c_[np.ones(len(X)), X]
+
+def lwr(p, X, Y, k):
+    W = np.eye(len(X))
+    for i in range(len(X)):
+        d = p - X[i]
+        W[i,i] = np.exp(-(d@d)/(2*k*k))
+    theta = np.linalg.inv(X.T@W@X) @ (X.T@W@Y)
+    return p @ theta
+
+p = np.array([1,1400])   # test house size
+print("Predicted Price:", round(lwr(p,X,Y,500),2), "Lakhs")
+
+OUTPUT:
+Predicted Price: 35.12 Lakhs
